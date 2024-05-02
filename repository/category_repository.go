@@ -45,8 +45,20 @@ func (r *CategoryRepository) Delete(ctx context.Context, tx *sql.Tx, c entity.Ca
 	helper.PanicIfError(err)
 }
 
-func (r *CategoryRepository) Get(ctx context.Context, tx *sql.Tx, c entity.Category) []entity.Category {
-	return c
+func (r *CategoryRepository) Get(ctx context.Context, tx *sql.Tx) []entity.Category {
+	query := "select id, name from categories"
+	result, err := tx.QueryContext(ctx, query)
+	helper.PanicIfError(err)
+
+	categories := []entity.Category{}
+	for result.Next() {
+		category := entity.Category{}
+		err := result.Scan(&category.Id, &category.Name)
+		helper.PanicIfError(err)
+		categories = append(categories, category)
+	}
+
+	return categories
 }
 
 func (r *CategoryRepository) GetById(ctx context.Context, tx *sql.Tx, id int) (entity.Category, error) {
