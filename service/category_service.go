@@ -6,6 +6,8 @@ import (
 	"golang-restfulapi/entity"
 	"golang-restfulapi/helper"
 	"golang-restfulapi/repository"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type ICategoryService interface {
@@ -19,9 +21,13 @@ type ICategoryService interface {
 type CategoryService struct {
 	categoryRepository repository.CategoryRepository
 	DB                 *sql.DB
+	Validate           *validator.Validate
 }
 
 func (s *CategoryService) Create(ctx context.Context, req entity.CategoryCreateRequest) entity.CategoryResponse {
+	err := s.Validate.Struct(req)
+	helper.PanicIfError(err)
+
 	tx, err := s.DB.Begin()
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
@@ -36,6 +42,9 @@ func (s *CategoryService) Create(ctx context.Context, req entity.CategoryCreateR
 }
 
 func (s *CategoryService) Update(ctx context.Context, req entity.CategoryUpdateRequest) entity.CategoryResponse {
+	err := s.Validate.Struct(req)
+	helper.PanicIfError(err)
+
 	tx, err := s.DB.Begin()
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
